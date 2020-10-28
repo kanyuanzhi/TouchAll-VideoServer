@@ -1,0 +1,8 @@
+{
+  "socket_server": {
+    "port": "9080"
+  },
+  "websocket_server": {
+    "port": "9081"
+  }
+}

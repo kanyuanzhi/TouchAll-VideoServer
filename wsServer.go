@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"videoServer/models"
+	"videoServer/utils"
 )
 
 const MAXMESSAGESIZE = 4024
@@ -31,10 +32,12 @@ func NewWsServer(wsClients *WsClients) *WsServer {
 }
 
 func (wsServer *WsServer) Start() {
-	addr := flag.String("addr", "localhost:9081", "http service address")
+	config := utils.NewConfig()
+	port := config.GetWebSocketConfig().(string)
+	addr := flag.String("addr", ":"+port, "http service address")
 	http.HandleFunc("/ws", wsServer.serveWs)
 
-	log.Println("start wsServer on port 9081")
+	log.Printf("Start WsServer on port %s", port)
 
 	http.ListenAndServe(*addr, nil)
 }

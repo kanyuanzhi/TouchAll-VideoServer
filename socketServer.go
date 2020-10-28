@@ -6,6 +6,7 @@ import (
 	"net"
 	"videoServer/models"
 	"videoServer/protocal"
+	"videoServer/utils"
 )
 
 // 接口服务器
@@ -20,8 +21,10 @@ func NewSocketServer(wsClients *WsClients) *SocketServer {
 }
 
 func (socketServer *SocketServer) Start() {
-	l, err := net.Listen("tcp", ":9080")
-	log.Printf("start SocketServer on port 9080")
+	config := utils.NewConfig()
+	port := config.GetSocketConfig().(string)
+	l, err := net.Listen("tcp", ":"+port)
+	log.Printf("Start SocketServer on port %s", port)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -61,8 +64,6 @@ func (socketServer *SocketServer) reader(readerChannel chan []byte) {
 			video := new(models.Video)
 			video.Camera = protocal.BytesToInt(data[:4])
 			video.Image = data[4:]
-			//var video models.Video
-			//json.Unmarshal(data, &video)
 			socketServer.wsClients.video <- video
 		}
 	}
