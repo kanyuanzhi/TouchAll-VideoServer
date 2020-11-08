@@ -1,9 +1,9 @@
 package main
 
 import (
+	"TouchAll-VideoServer/models"
 	"github.com/gorilla/websocket"
 	"log"
-	"videoServer/models"
 )
 
 type WsClients struct {

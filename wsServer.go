@@ -1,13 +1,13 @@
 package main
 
 import (
+	"TouchAll-VideoServer/models"
+	"TouchAll-VideoServer/utils"
 	"encoding/json"
 	"flag"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	"videoServer/models"
-	"videoServer/utils"
 )
 
 const MAXMESSAGESIZE = 4024

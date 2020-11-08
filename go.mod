@@ -1,4 +1,4 @@
-module videoServer
+module TouchAll-VideoServer
 
 go 1.15
 
