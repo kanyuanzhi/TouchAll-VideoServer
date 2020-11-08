@@ -1,9 +1,10 @@
-package main
+package socket
 
 import (
 	"TouchAll-VideoServer/models"
 	"TouchAll-VideoServer/protocal"
 	"TouchAll-VideoServer/utils"
+	"TouchAll-VideoServer/websocket"
 	"fmt"
 	"log"
 	"net"
@@ -11,10 +12,10 @@ import (
 
 // 接口服务器
 type SocketServer struct {
-	wsClients *WsClients
+	wsClients *websocket.WsClients
 }
 
-func NewSocketServer(wsClients *WsClients) *SocketServer {
+func NewSocketServer(wsClients *websocket.WsClients) *SocketServer {
 	return &SocketServer{
 		wsClients: wsClients,
 	}
@@ -64,7 +65,7 @@ func (socketServer *SocketServer) reader(readerChannel chan []byte) {
 			video := new(models.Video)
 			video.Camera = protocal.BytesToInt(data[:4])
 			video.Image = data[4:]
-			socketServer.wsClients.video <- video
+			socketServer.wsClients.Video <- video
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package main
+package websocket
 
 import (
 	"TouchAll-VideoServer/models"
@@ -10,7 +10,7 @@ type WsClients struct {
 	members map[int]map[*websocket.Conn]bool
 	//lockers  map[*websocket.Conn]*sync.Mutex
 	register chan *models.Register
-	video    chan *models.Video
+	Video    chan *models.Video
 }
 
 func NewClients() *WsClients {
@@ -18,7 +18,7 @@ func NewClients() *WsClients {
 		//lockers:  make(map[*websocket.Conn]*sync.Mutex),
 		members:  make(map[int]map[*websocket.Conn]bool),
 		register: make(chan *models.Register),
-		video:    make(chan *models.Video),
+		Video:    make(chan *models.Video),
 	}
 }
 
@@ -30,7 +30,7 @@ func (wsClients *WsClients) Start() {
 				wsClients.members[request.Camera] = make(map[*websocket.Conn]bool)
 			}
 			wsClients.members[request.Camera][request.Conn] = true
-		case video := <-wsClients.video:
+		case video := <-wsClients.Video:
 			if members, has := wsClients.members[video.Camera]; has {
 				for member := range members {
 					go func(member *websocket.Conn) {
