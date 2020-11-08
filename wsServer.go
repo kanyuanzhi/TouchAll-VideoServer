@@ -37,7 +37,7 @@ func (wsServer *WsServer) Start() {
 	addr := flag.String("addr", ":"+port, "http service address")
 	http.HandleFunc("/ws", wsServer.serveWs)
 
-	log.Printf("Start WsServer on port %s", port)
+	log.Printf("Start WsServer the of video server on port %s", port)
 
 	http.ListenAndServe(*addr, nil)
 }

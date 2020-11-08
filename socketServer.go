@@ -24,7 +24,7 @@ func (socketServer *SocketServer) Start() {
 	config := utils.NewConfig()
 	port := config.GetSocketConfig().(string)
 	l, err := net.Listen("tcp", ":"+port)
-	log.Printf("Start SocketServer on port %s", port)
+	log.Printf("Start the SocketServer of video server on port %s", port)
 	if err != nil {
 		fmt.Println(err)
 		return
