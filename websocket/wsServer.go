@@ -39,27 +39,42 @@ func (wsServer *WsServer) Start() {
 
 	log.Printf("Start WsServer the of video server on port %s", port)
 
-	http.ListenAndServe(*addr, nil)
+	_ = http.ListenAndServe(*addr, nil)
 }
 
 func (wsServer *WsServer) serveWs(w http.ResponseWriter, r *http.Request) {
 	conn, _ := upgrader.Upgrade(w, r, nil)
-
-	_, message, err := conn.ReadMessage()
-	if err != nil {
-		log.Println("read:", err)
-		conn.Close()
-		return
+	for {
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			_ = conn.Close()
+			return
+		}
+		go wsServer.handleConn(message, conn)
 	}
-
+}
+func (wsServer *WsServer) handleConn(message []byte, conn *websocket.Conn) {
 	var request models.Request
-	err = json.Unmarshal(message, &request)
+	err := json.Unmarshal(message, &request)
 	if err != nil {
-		log.Println("json:", err)
-		conn.Close()
+		log.Println(err.Error())
+		_ = conn.Close()
 		return
 	}
 
-	register := models.NewRegister(request.Camera, conn)
+	if request.RequestType != 52 {
+		return
+	}
+	if previousCameraID := request.PreviousCameraID; previousCameraID != 0 {
+		delete(wsServer.wsClients.members[previousCameraID], conn)
+		if len(wsServer.wsClients.members[previousCameraID]) == 0 {
+			delete(wsServer.wsClients.members, previousCameraID)
+		}
+	} else if previousCameraID == request.CameraID {
+		return
+	}
+	register := models.NewRegister(request.CameraID, conn)
 	wsServer.wsClients.register <- register
+
 }

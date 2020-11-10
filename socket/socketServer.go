@@ -63,7 +63,7 @@ func (socketServer *SocketServer) reader(readerChannel chan []byte) {
 		select {
 		case data := <-readerChannel:
 			video := new(models.Video)
-			video.Camera = protocal.BytesToInt(data[:4])
+			video.CameraID = protocal.BytesToInt(data[:4])
 			video.Image = data[4:]
 			socketServer.wsClients.Video <- video
 		}

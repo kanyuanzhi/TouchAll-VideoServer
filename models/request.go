@@ -1,11 +1,7 @@
 package models
 
 type Request struct {
-	Camera int `json:"camera" bson:"camera"`
-}
-
-func NewRequest(camera int) *Request {
-	return &Request{
-		Camera: camera,
-	}
+	RequestType      int `json:"request_type"`
+	CameraID         int `json:"camera_id" bson:"camera_id"`
+	PreviousCameraID int `json:"previous_camera_id"`
 }

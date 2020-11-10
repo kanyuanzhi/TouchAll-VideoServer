@@ -23,6 +23,7 @@ func NewVideoServer() *VideoServer {
 
 func (videoServer *VideoServer) Start() {
 	go videoServer.WsClients.Start()
+	//go videoServer.WsClients.Status()
 	go videoServer.WsServer.Start()
 	go videoServer.SocketServer.Start()
 }

@@ -4,13 +4,15 @@ import (
 	"TouchAll-VideoServer/models"
 	"github.com/gorilla/websocket"
 	"log"
+	"time"
 )
 
 type WsClients struct {
 	members map[int]map[*websocket.Conn]bool
 	//lockers  map[*websocket.Conn]*sync.Mutex
-	register chan *models.Register
-	Video    chan *models.Video
+	register   chan *models.Register
+	unRegister chan *models.Register
+	Video      chan *models.Video
 }
 
 func NewClients() *WsClients {
@@ -26,23 +28,34 @@ func (wsClients *WsClients) Start() {
 	for {
 		select {
 		case request := <-wsClients.register: // 注册
-			if _, has := wsClients.members[request.Camera]; !has {
-				wsClients.members[request.Camera] = make(map[*websocket.Conn]bool)
+			if _, has := wsClients.members[request.CameraID]; !has {
+				wsClients.members[request.CameraID] = make(map[*websocket.Conn]bool)
 			}
-			wsClients.members[request.Camera][request.Conn] = true
+			wsClients.members[request.CameraID][request.Conn] = true
+
 		case video := <-wsClients.Video:
-			if members, has := wsClients.members[video.Camera]; has {
+			if members, has := wsClients.members[video.CameraID]; has {
 				for member := range members {
 					go func(member *websocket.Conn) {
 						err := member.WriteMessage(websocket.BinaryMessage, video.Image)
 						if err != nil {
-							log.Printf("write errro: %s,%s", err)
+							log.Printf("write errro: %s", err.Error())
 							member.Close()
 							delete(members, member)
+							if len(members) == 0 {
+								delete(wsClients.members, video.CameraID)
+							}
 						}
 					}(member)
 				}
 			}
 		}
+	}
+}
+
+func (wsClients *WsClients) Status() {
+	for {
+		log.Println(wsClients.members)
+		time.Sleep(2 * time.Second)
 	}
 }
