@@ -64,8 +64,16 @@ func (socketServer *SocketServer) reader(readerChannel chan []byte) {
 		case data := <-readerChannel:
 			video := new(models.Video)
 			video.CameraID = protocal.BytesToInt(data[:4])
-			video.Image = data[4:]
-			socketServer.wsClients.Video <- video
+			video.DataType = protocal.BytesToInt(data[4:8])
+			video.Image = data[8:]
+			switch video.DataType {
+			case 50:
+				socketServer.wsClients.Video <- video
+			case 53:
+				socketServer.wsClients.AIVideo <- video
+			default:
+				return
+			}
 		}
 	}
 }

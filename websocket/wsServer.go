@@ -63,18 +63,30 @@ func (wsServer *WsServer) handleConn(message []byte, conn *websocket.Conn) {
 		return
 	}
 
-	if request.RequestType != 52 {
-		return
-	}
-	if previousCameraID := request.PreviousCameraID; previousCameraID != 0 {
-		delete(wsServer.wsClients.members[previousCameraID], conn)
-		if len(wsServer.wsClients.members[previousCameraID]) == 0 {
-			delete(wsServer.wsClients.members, previousCameraID)
+	switch request.RequestType {
+	case 50:
+		if previousCameraID := request.PreviousCameraID; previousCameraID != 0 {
+			delete(wsServer.wsClients.members[previousCameraID], conn)
+			if len(wsServer.wsClients.members[previousCameraID]) == 0 {
+				delete(wsServer.wsClients.members, previousCameraID)
+			}
+		} else if previousCameraID == request.CameraID {
+			return
 		}
-	} else if previousCameraID == request.CameraID {
+		register := models.NewRegister(request.CameraID, conn)
+		wsServer.wsClients.register <- register
+	case 53:
+		if previousCameraID := request.PreviousCameraID; previousCameraID != 0 {
+			delete(wsServer.wsClients.aiMembers[previousCameraID], conn)
+			if len(wsServer.wsClients.aiMembers[previousCameraID]) == 0 {
+				delete(wsServer.wsClients.aiMembers, previousCameraID)
+			}
+		} else if previousCameraID == request.CameraID {
+			return
+		}
+		aiRegister := models.NewRegister(request.CameraID, conn)
+		wsServer.wsClients.aiRegister <- aiRegister
+	default:
 		return
 	}
-	register := models.NewRegister(request.CameraID, conn)
-	wsServer.wsClients.register <- register
-
 }
