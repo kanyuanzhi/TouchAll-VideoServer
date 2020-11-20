@@ -65,27 +65,41 @@ func (wsServer *WsServer) handleConn(message []byte, conn *websocket.Conn) {
 
 	switch request.RequestType {
 	case 50:
-		if previousCameraID := request.PreviousCameraID; previousCameraID != 0 {
-			delete(wsServer.wsClients.members[previousCameraID], conn)
-			if len(wsServer.wsClients.members[previousCameraID]) == 0 {
-				delete(wsServer.wsClients.members, previousCameraID)
+		previousCameraID := request.PreviousCameraID
+		if previousCameraID == -1 {
+			// 前端无切换请求不同监控的需求，用于数据墙
+			register := models.NewRegister(request.CameraID, conn)
+			wsServer.wsClients.individualRegister <- register
+		} else {
+			// 满足前端通过点击切换请求不同监控
+			if previousCameraID != 0 {
+				delete(wsServer.wsClients.members[previousCameraID], conn)
+				if len(wsServer.wsClients.members[previousCameraID]) == 0 {
+					delete(wsServer.wsClients.members, previousCameraID)
+				}
+			} else if previousCameraID == request.CameraID {
+				return
 			}
-		} else if previousCameraID == request.CameraID {
-			return
+			register := models.NewRegister(request.CameraID, conn)
+			wsServer.wsClients.register <- register
 		}
-		register := models.NewRegister(request.CameraID, conn)
-		wsServer.wsClients.register <- register
 	case 53:
-		if previousCameraID := request.PreviousCameraID; previousCameraID != 0 {
-			delete(wsServer.wsClients.aiMembers[previousCameraID], conn)
-			if len(wsServer.wsClients.aiMembers[previousCameraID]) == 0 {
-				delete(wsServer.wsClients.aiMembers, previousCameraID)
+		previousCameraID := request.PreviousCameraID
+		if previousCameraID == -1 {
+			aiRegister := models.NewRegister(request.CameraID, conn)
+			wsServer.wsClients.individualAIRegister <- aiRegister
+		} else {
+			if previousCameraID := request.PreviousCameraID; previousCameraID != 0 {
+				delete(wsServer.wsClients.aiMembers[previousCameraID], conn)
+				if len(wsServer.wsClients.aiMembers[previousCameraID]) == 0 {
+					delete(wsServer.wsClients.aiMembers, previousCameraID)
+				}
+			} else if previousCameraID == request.CameraID {
+				return
 			}
-		} else if previousCameraID == request.CameraID {
-			return
+			aiRegister := models.NewRegister(request.CameraID, conn)
+			wsServer.wsClients.aiRegister <- aiRegister
 		}
-		aiRegister := models.NewRegister(request.CameraID, conn)
-		wsServer.wsClients.aiRegister <- aiRegister
 	default:
 		return
 	}
